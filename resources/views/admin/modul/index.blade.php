@@ -55,9 +55,7 @@
 						@if(Auth::user()->group==2)
 							<th style="width: 20%">Status</th>
 						@endif
-						@if(Auth::user()->group==1)
-							<th style="width: 15%">#aksi</th>
-						@endif
+						<th style="width: 15%">#aksi</th>
 					</tr>
 					@foreach($modul as $v)
 					<tr>
@@ -72,7 +70,7 @@
 									$count = DB::table('baca_job_sheet_tbl')->where('modul_id',$v->id)->where('user_id',Auth::user()->id)->count();
 								@endphp
 								@if($count==0)
-									<span class="label label-danger">Belum Dibaca</span>
+									<span class="label label-danger" id="statusLabel{{ $v->id }}">Belum Dibaca</span>
 								@else
 									<span class="label label-success">Sudah Dibaca</span>
 								@endif
@@ -86,7 +84,9 @@
 						@else
 							@if($count==0)
 							<td>
-								<a href="{{ url('baca_job_sheet/'.$v->id ) }}" class="btn btn-xs btn-flat btn-success" onclick="return confirm('Anda Yakin ?');">Sudah Di Baca</a>
+								<!-- <a href="#" id="{{ $v->id }}" onclick="bacaJobsheet(this.id)" class="btn btn-xs btn-flat btn-success">Sudah Di Baca</a> -->
+								<a href="#" value="{{ $v->id }}" onclick="bacaJobsheet(event, {{ $v->id }})" class="btn btn-xs btn-flat btn-success" id="btnSudahDibaca_{{ $v->id }}">Sudah Di Baca</a>
+
 							</td>
 							@endif
 						@endif
@@ -110,6 +110,8 @@
 						<!-- /.modal-dialog -->
 					</div>
 					<!-- /.modal -->
+
+
 					@endforeach
 				</table>
 
@@ -121,4 +123,29 @@
 	</div>
 	</section>
 </div>
+
+<script>
+	function bacaJobsheet(event,id){
+		event.preventDefault(); // Mencegah perilaku default tombol
+		console.log(id);
+
+		if (confirm('Apakah Anda yakin ingin menandai ini sebagai sudah dibaca?')) {
+			$.ajax({
+				type : "GET",
+				url : "{{ url('/baca_job_sheet/') }}/"+id,
+				// data: {
+					// 'id': id,
+					// '_token': $('input[name=_token]').val(),
+				// },   
+				success : function(response){
+					// Menggunakan respons dari server jika diperlukan
+					$('#statusLabel' + id).text('Sudah Dibaca').removeClass('label-danger').addClass('label-success');
+					// Menyembunyikan tombol "Sudah Dibaca"
+					$('#btnSudahDibaca_' + id).hide();
+					// alert('Data berhasil diperbarui!');
+				}
+			}) 
+		}
+	}
+</script>
 @endsection
